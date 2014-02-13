@@ -13,28 +13,22 @@
 ;; limitations under the License.
 
 (ns buddy.hashers.md5
-  (:require [buddy.crypto.core :refer :all]
-            [buddy.codecs :refer :all]
+  (:require [buddy.core.util :refer :all]
+            [buddy.core.codecs :refer :all]
+            [buddy.core.hash :refer [md5]]
             [clojure.string :refer [split]])
   (:import (java.security MessageDigest)))
 
 (defn make-md5
   [password salt]
-  (let [passwd  (str->bytes password)
-        salt    (cond
-                  (string? salt) (str->bytes salt)
-                  (bytes? salt) salt
-                  :else (throw (IllegalArgumentException. "invalid salt type")))
-        md      (doto (MessageDigest/getInstance "MD5")
-                  (.update salt)
-                  (.update passwd))]
-    (bytes->hex (.digest md))))
+  (md5 (->byte-array password)
+       (->byte-array salt)))
 
 (defn make-password
   "Encrypts a raw string password using
   md5 hash algorithm and return formatted
   string."
-  [pw & [{:keys [salt]}]]
+  [pw & [{:keys [salt] :or {salt ""}}]]
   (let [salt      (if (nil? salt) (random-bytes 12) salt)
         password  (make-md5 pw salt)]
     (format "md5$%s$%s" (bytes->hex salt) password)))

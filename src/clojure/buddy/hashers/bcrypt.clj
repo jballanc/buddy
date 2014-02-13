@@ -14,8 +14,8 @@
 
 (ns buddy.hashers.bcrypt
   (:require [buddy.hashers.sha256 :refer [make-sha256]]
-            [buddy.crypto.core :refer :all]
-            [buddy.codecs :refer :all]
+            [buddy.core.util :refer :all]
+            [buddy.core.codecs :refer :all]
             [clojure.string :refer [split]])
   (:import (buddy.impl BCrypt)))
 
@@ -32,9 +32,7 @@
   [pw & [{:keys [salt rounds] :or {rounds 12}}]]
   (let [salt   (cond
                 (nil? salt) (bytes->hex (random-bytes 12))
-                (string? salt) salt
-                (bytes? salt) (bytes->hex salt)
-                :else (throw (IllegalArgumentException. "invalid salt type")))
+                :else (bytes->hex (->byte-array salt)))
         passwd (-> (str salt pw salt)
                    (make-bcrypt rounds)
                    (str->bytes)

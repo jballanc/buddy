@@ -2,7 +2,7 @@
   (:require [clojure.test :refer :all]
             [buddy.codecs :as codecs]
             [buddy.crypto.core :refer :all]
-            [buddy.crypto.signing :as signing])
+            [buddy.sign.generic :as gsign])
   (:import (java.util Arrays)))
 
 (def secret "test")
@@ -23,20 +23,20 @@
 
 (deftest sign-tests
   (testing "Signing/Unsigning with default keys"
-    (let [signed (signing/sign "foo" secret)]
+    (let [signed (gsign/sign "foo" secret)]
       (Thread/sleep 1000)
-      (is (not= (signing/sign "foo" secret) signed))
-      (is (= (signing/unsign signed secret) "foo"))))
+      (is (not= (gsign/sign "foo" secret) signed))
+      (is (= (gsign/unsign signed secret) "foo"))))
 
   (testing "Signing/Unsigning timestamped"
-    (let [signed (signing/sign "foo" secret)]
-      (is (= "foo" (signing/unsign signed secret {:max-age 20})))
+    (let [signed (gsign/sign "foo" secret)]
+      (is (= "foo" (gsign/unsign signed secret {:max-age 20})))
       (Thread/sleep 700)
-      (is (nil? (signing/unsign signed secret {:max-age -1})))))
+      (is (nil? (gsign/unsign signed secret {:max-age -1})))))
 
   (testing "Signing/Unsigning complex clojure data"
-    (let [signed (signing/dumps {:foo 2 :bar 1} secret)]
-      (is (= {:foo 2 :bar 1} (signing/loads signed secret))))))
+    (let [signed (gsign/dumps {:foo 2 :bar 1} secret)]
+      (is (= {:foo 2 :bar 1} (gsign/loads signed secret))))))
 
 
 (deftest crypto-tests
